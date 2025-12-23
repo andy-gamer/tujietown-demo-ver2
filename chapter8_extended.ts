@@ -1,151 +1,177 @@
 import { Scene, WorldState } from './types';
 
-export const chapter8_1: Scene = {
-  id: 'ch8_1',
+export const chapter8_chase: Scene = {
+  id: 'ch8_chase',
   chapterIndex: 8,
-  title: '土界小學：幽暗走廊',
-  outlinePhase: '【承】調查與潛伏',
-  description: '學校走廊漆黑一片。燕發現這裡的牆壁佈滿了塗鴉，似乎在描述一個被遺忘的節日。必須找到進入禮堂的路。',
+  title: '土界小學：奪走項鍊的男孩',
+  outlinePhase: '【承】遺失的聯繫',
+  description: '燕追著小男孩進入了廢棄的校區。小男孩奪走了他的項鍊，那種神情與其說是惡意，更像是某種無聲的求救。',
   imageUrl: '',
   world: WorldState.OTHERWORLD,
-  canSoulSee: true,
-  interactiveElements: [
-    { id: 'drawing', label: '稚嫩的塗鴉', description: '畫著兩個手牽手的小男孩，其中一個被塗成了全黑。' },
-    { id: 'locker', label: '生鏽的儲物櫃', description: '櫃子裡塞滿了枯萎的百合花瓣。' }
-  ],
   dialogues: [
-    { speaker: '燕', text: '這些塗鴉...為什麼看著這麼眼熟？' },
-    { speaker: '燕(內心)', text: '小男孩故意引我來這裡，這就是他的藏身處嗎？' }
+    { speaker: '燕', text: '喂！把項鍊還給我！那對我很重要！' },
+    { speaker: '小男孩', text: '（不發一語，轉身跑進幽暗的禮堂大門）' },
+    { speaker: '燕', text: '這孩子...跑得快得不像人類。' }
   ],
   choices: [
-    { text: '推開禮堂沉重的大門', nextSceneId: 'ch8_2_1' }
+    { text: '追入大禮堂', nextSceneId: 'ch8_gym' }
   ]
 };
 
-export const chapter8_2_1: Scene = {
-  id: 'ch8_2_1',
+export const chapter8_gym: Scene = {
+  id: 'ch8_gym',
   chapterIndex: 9,
-  title: '禮堂對峙：視線的代價',
-  outlinePhase: '【對抗】介入記憶第一階段',
-  description: '禮堂中央，巨大的花倀怪物正在痛苦地抽搐。它的周圍籠罩著黑霧，唯有啟動「看取」才能看穿霧氣。',
+  title: '禮堂：花倀的突襲',
+  outlinePhase: '【對抗】現出真身',
+  description: '禮堂講台上，男孩佇立在那。當燕靠近時，男孩的身軀突然扭曲、膨脹，變成了猙獰的花倀怪物。',
   imageUrl: '',
   world: WorldState.OTHERWORLD,
-  canSoulSee: true,
-  soulSeeDescription: '使用強光直視記憶節點。這會激怒怪物，但唯有如此才能前進。',
   interactiveElements: [
-    {
-      id: 'memo_1',
-      label: '記憶閃光：孤獨',
-      description: '【記憶片段】家豪坐在樹下，等著永遠不會來的燕。那塊融化的巧克力是他最後的期盼。',
-      requiresSoulSee: true,
-      effect: (s) => ({ hp: s.hp - 15, inventory: [...s.inventory, 'memo_1'] })
-    }
+    { id: 'control_room', label: '二樓音控室', description: '唯一看起來能躲避攻擊的地方。' }
   ],
   dialogues: [
-    { speaker: '燕', text: '那是...我們約好的地方？他在那裡等了多久？' },
-    { speaker: '怪物家豪', text: '（發出震耳欲聾的咆哮，藤蔓在空中狂舞，對強光產生劇烈反應）' },
-    { speaker: '系統', text: '你強行窺視了他的痛苦。身體感到一陣劇痛，怪物的情緒開始失控。' }
+    { speaker: '燕', text: '這...這根本不是人類！' },
+    { speaker: '花倀家豪', text: '（發出刺耳的尖嘯，藤蔓向燕襲來）' },
+    { speaker: '系統', text: '你被迫逃入了二樓的音控室，並反鎖了門。' }
   ],
   choices: [
-    { 
-      text: '承受衝擊，繼續干涉記憶', 
-      nextSceneId: 'ch8_2_2',
-      condition: (s) => s.inventory.includes('memo_1'),
-      conditionMessage: '必須先啟動「看取」找出記憶閃光。'
-    }
+    { text: '搜索音控室', nextSceneId: 'ch8_control_room' }
   ]
 };
 
-export const chapter8_2_2: Scene = {
-  id: 'ch8_2_2',
+export const chapter8_control_room: Scene = {
+  id: 'ch8_control_room',
   chapterIndex: 10,
-  title: '禮堂對峙：空間崩裂',
-  outlinePhase: '【對抗】介入記憶第二階段',
-  description: '環境開始崩塌，天花板垂下無數被塗黑的眼睛。怪物的身軀變得更為龐大，四周響起了祭祀的唱詞聲。',
+  title: '音控室：被遺忘的紀念冊',
+  outlinePhase: '【調查】看取回憶',
+  description: '音控室裡積滿灰塵。燕在角落發現了一本「畢業紀念冊」，裡面翻開的某一頁缺了一張大頭照。',
   imageUrl: '',
   world: WorldState.OTHERWORLD,
   canSoulSee: true,
+  soulSeeDescription: '對著殘破的紀念冊使用「看取」，試圖連結這個靈魂的過去。',
   interactiveElements: [
-    {
-      id: 'memo_2',
-      label: '記憶閃光：背叛',
-      description: '【記憶片段】燕推開了家豪的手，轉身逃跑。大人們的陰影蓋住了哭泣的孩子。',
-      requiresSoulSee: true,
-      effect: (s) => ({ hp: s.hp - 20, inventory: [...s.inventory, 'memo_2'] })
-    }
+    { id: 'album_base', label: '畢業紀念冊', description: '缺了一張頭像，那是屬於「張家豪」的位置。' }
   ],
   dialogues: [
-    { speaker: '燕', text: '住手...不要再播了！當時的我根本什麼都做不到！' },
-    { speaker: '怪物家豪', text: '（完全失去人形的姿態，瘋狂地掃向所有光源）' },
-    { speaker: '系統', text: '空間震動加劇。每一次「看取」都在撕裂他好不容易建立的噩夢防線。' }
+    { speaker: '燕', text: '這本紀念冊...為什麼會在這裡？' },
+    { speaker: '燕(內心)', text: '我有種預感，如果不找回那張頭像，我就永遠離不開這裡。' }
   ],
   choices: [
     { 
-      text: '直視最終的核心', 
-      nextSceneId: 'ch8_2_3',
-      condition: (s) => s.inventory.includes('memo_2'),
-      conditionMessage: '在混亂的視線中找到第二段閃光。'
+      text: '對紀念冊使用「看取」', 
+      nextSceneId: 'ch8_classroom',
+      effect: (s) => ({ soulSeeingActive: false }) 
     }
   ]
 };
 
-export const chapter8_2_3: Scene = {
-  id: 'ch8_2_3',
+export const chapter8_classroom: Scene = {
+  id: 'ch8_classroom',
   chapterIndex: 11,
-  title: '禮堂對峙：完全異化',
-  outlinePhase: '【對抗】介入記憶核心',
-  description: '禮堂中心已被巨大的血紅百合貫穿。家豪的身軀已被花蕊徹底吞噬，只剩下一個不斷搏動的核心。',
+  title: '幻影教室：夕陽下的缺憾',
+  outlinePhase: '【轉】記憶潛行',
+  description: '一陣眩暈後，燕發現自己身處夕陽紅色的教室，空無一人。窗外的夕陽如血一般。這是他的國小教室。',
   imageUrl: '',
-  world: WorldState.OTHERWORLD,
-  canSoulSee: true,
+  world: WorldState.DREAM,
   interactiveElements: [
-    {
-      id: 'memo_3',
-      label: '核心閃光：遺願',
-      description: '【記憶片段】溺水前的家豪並沒有恨燕，他只是在恐懼中，希望能有一個人握住他的手。',
-      requiresSoulSee: true,
-      effect: (s) => ({ hp: s.hp - 25, inventory: [...s.inventory, 'memo_3'] })
-    }
+    { 
+      id: 'desk_photo', 
+      label: '自己的抽屜', 
+      description: '燕在自己的課桌抽屜裡翻到了一張「遺失的大頭照」。',
+      effect: (s) => ({ inventory: [...s.inventory, 'jiahao_photo'] })
+    },
+    { id: 'black_shadow', label: '座位上的黑影', description: '一個熟悉的黑影坐在家豪生前的座位上，低頭沈默。' }
   ],
   dialogues: [
-    { speaker: '燕', text: '原來...這才是你一直藏在心底的東西。' },
-    { speaker: '怪物家豪', text: '（巨大的哀鳴聲逐漸減弱，轉變為絕望的顫抖）' },
-    { speaker: '系統', text: '看取的強光徹底擊穿了防護。他正處於完全植物化的邊緣，你必須決定他的結局。' }
+    { speaker: '燕', text: '為什麼這張頭像會在我的抽屜裡...難道當初是我拿走的？' },
+    { speaker: '燕', text: '（走向黑影）家豪...你為什麼還不回家？' },
+    { speaker: '黑影', text: '我...不知道該往哪裡走。哪裡才是我的家？' }
   ],
   choices: [
     { 
-      text: '踏入核心空間', 
-      nextSceneId: 'ch8_3',
-      condition: (s) => s.inventory.includes('memo_3'),
-      conditionMessage: '尋找最後的真相節點。'
+      text: '將頭像貼回紀念冊', 
+      nextSceneId: 'ch8_abuse_room',
+      condition: (s) => s.inventory.includes('jiahao_photo'),
+      conditionMessage: '必須先在抽屜裡找到那張遺失的「大頭照」。'
     }
   ]
 };
 
-export const chapter8_3: Scene = {
-  id: 'ch8_3',
-  chapterIndex: 12,
-  title: '花倀之心：最後的慈悲',
-  outlinePhase: '【合】救贖或永眠',
-  description: '在虛幻的空間中，家豪蜷縮在巨大的花蕊中心，身體已經開始木質化。他不再攻擊，只是靜靜地等待最終的審判。',
+export const chapter8_abuse_room: Scene = {
+  id: 'ch8_abuse_room',
+  chapterIndex: 11,
+  title: '黑暗空間：家暴的迴響',
+  outlinePhase: '【轉】黑暗的拽拉',
+  description: '貼上頭像的瞬間，場景切換到一間陰暗破亂的民房。門外傳來男子酒醉的吆喝與女子的哭聲。',
   imageUrl: '',
   world: WorldState.DREAM,
   dialogues: [
-    { speaker: '系統', text: '家豪已經無法再維持人類的形態。如果不做任何干涉，他將徹底化為九姑娘的營養，成為永世不得超生的花倀。' },
-    { speaker: '燕', text: '如果現在喚醒他...他就必須面對當初溺水的死亡事實。' },
-    { speaker: '燕', text: '但至少，他能以「人」的身分離開這座小鎮。' },
-    { speaker: '系統', text: '請做出最終抉擇。這段創傷是否應該就此消化？' }
+    { speaker: '系統', text: '空間開始閃現家豪的記憶：父親的虐待、母親的離棄、花倀印記的萌發。' },
+    { speaker: '燕', text: '（門被無形力量撞開）不...救命！' },
+    { speaker: '系統', text: '一隻漆黑粗壯的巨手從門內的虛無伸出，死命拽住燕的左腳。燕被拖入了寫滿侮辱謾罵的雙手群中。' }
+  ],
+  choices: [
+    { text: '在痛苦中沈入深淵', nextSceneId: 'ch8_park' }
+  ]
+};
+
+export const chapter8_park: Scene = {
+  id: 'ch8_park',
+  chapterIndex: 12,
+  title: '心靈公園：最後的糖果',
+  outlinePhase: '【轉】尋找解藥',
+  description: '燕在公園的長椅旁醒來。這是家豪記憶中唯一的溫柔之處。家豪不斷地在長椅、沙坑、盪鞦韆間閃現。',
+  imageUrl: '',
+  world: WorldState.DREAM,
+  dialogues: [
+    { speaker: '燕', text: '這就是你唯一能感到安心的地方嗎？' },
+    { speaker: '家豪', text: '（坐在盪鞦韆上）燕哥哥，這顆糖給你。妳能不能陪我玩？' },
+    { speaker: '燕', text: '好，我陪你。我們一起走。' }
+  ],
+  choices: [
+    { text: '成功解開家豪的心結', nextSceneId: 'ch8_boss_confront', effect: (s) => ({ suspicion: 0 }) },
+    { text: '對話失敗（激怒九姑娘）', nextSceneId: 'ch8_boss_confront', effect: (s) => ({ suspicion: 50 }) }
+  ]
+};
+
+export const chapter8_boss_confront: Scene = {
+  id: 'ch8_boss_confront',
+  chapterIndex: 12,
+  title: '禮堂終戰：九姑娘的干預',
+  outlinePhase: '【對抗】九姑娘的嘲諷',
+  description: '天空傳來九姑娘尖銳的笑聲。家豪再次痛苦地異化，巨大的藤蔓從禮堂地表竄出，將溫馨的公園撕裂。',
+  imageUrl: '',
+  world: WorldState.OTHERWORLD,
+  dialogues: [
+    { speaker: '九姑娘', text: '沒用的。他已經是我的一部分了。妳越想拯救他，他越痛苦。' },
+    { speaker: '花倀家豪', text: '（巨大的身軀向燕重重壓下，進入最終決戰）' }
+  ],
+  choices: [
+    { text: '擊敗花倀並做出最終決定', nextSceneId: 'ch8_final_decision' }
+  ]
+};
+
+export const chapter8_final_decision: Scene = {
+  id: 'ch8_final_decision',
+  chapterIndex: 12,
+  title: '靈魂的歸宿',
+  outlinePhase: '【合】救贖或沈眠',
+  description: '戰鬥結束，家豪虛弱地癱在光影之中。九姑娘的氣息暫時退去。',
+  imageUrl: '',
+  world: WorldState.DREAM,
+  dialogues: [
+    { speaker: '系統', text: '這是一切的終點。家豪的命運掌握在你手中。' }
   ],
   choices: [
     { 
-      text: '【喚醒】粉碎幻夢（家豪靈魂覺醒並回歸塵土，燕重傷獲救）', 
+      text: '【喚醒】回歸塵土（家豪表達感激後逐漸枯萎，靈魂重獲自由）', 
       nextSceneId: 'ch9_exit',
-      effect: (s) => ({ hp: 10, suspicion: 0 }) 
+      effect: (s) => ({ hp: 10, inventory: [...s.inventory, 'ending_freedom'] })
     },
     { 
-      text: '【沈眠】任其異化（家豪化為巨大的花倀之繭，燕背負詛咒離開）', 
+      text: '【沈眠】羽化繭蛹（家豪表示想睡一覺，化為繭蛹永遠留在夢境）', 
       nextSceneId: 'ch9_exit',
-      effect: (s) => ({ suspicion: 100 }) 
+      effect: (s) => ({ suspicion: 100, inventory: [...s.inventory, 'ending_cocoon'] })
     }
   ]
 };
