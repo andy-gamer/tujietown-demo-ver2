@@ -1,3 +1,4 @@
+
 import { Scene, WorldState } from './types';
 
 export const chapter8_chase: Scene = {

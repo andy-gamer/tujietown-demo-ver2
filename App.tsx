@@ -1,7 +1,8 @@
+
 import React, { useState, useEffect } from 'react';
 import { SCENES, INITIAL_STATE, CHAPTER_NAMES } from './constants';
 import { GameState, WorldState, InteractiveElement } from './types';
-import { ShieldAlert, Heart, ChevronRight, MapPin, History, Sparkles, X, BrainCircuit, Flame, BookOpen } from 'lucide-react';
+import { ShieldAlert, Heart, ChevronRight, MapPin, History, Sparkles, X, BrainCircuit, Flame, BookOpen, Search } from 'lucide-react';
 
 const App: React.FC = () => {
   const [gameState, setGameState] = useState<GameState>(INITIAL_STATE);
@@ -64,7 +65,7 @@ const App: React.FC = () => {
 
   const getBackgroundColor = () => {
     if (gameState.soulSeeingActive) {
-        if (currentScene.id.startsWith('ch8_2')) return 'from-red-950 via-black to-red-900';
+        if (currentScene.id.startsWith('ch8_')) return 'from-red-950 via-black to-red-900';
         return 'from-fuchsia-950 via-purple-900 to-indigo-950';
     }
     switch (gameState.world) {
@@ -79,36 +80,70 @@ const App: React.FC = () => {
     const elements = currentScene.interactiveElements || [];
     const visibleElements = elements.filter(el => !el.requiresSoulSee);
     let text = currentScene.description;
-    const parts: (string | React.ReactNode)[] = [];
-    let lastIndex = 0;
-
-    visibleElements.forEach((el) => {
+    
+    // 收集所有匹配項並排序
+    const matches: { index: number; length: number; el: InteractiveElement }[] = [];
+    visibleElements.forEach(el => {
       const target = `「${el.label}」`;
-      const index = text.indexOf(target);
-      if (index !== -1) {
-        parts.push(text.substring(lastIndex, index));
-        parts.push(
-          <button
-            key={el.id}
-            onClick={(e) => { e.stopPropagation(); handleInteraction(el); }}
-            className="px-1.5 py-0.5 rounded bg-white/10 border border-white/20 text-white text-[10px] font-bold inline-flex items-center gap-1 mx-0.5"
-          >
-            {el.label}
-          </button>
-        );
-        lastIndex = index + target.length;
+      let pos = text.indexOf(target);
+      while (pos !== -1) {
+        matches.push({ index: pos, length: target.length, el });
+        pos = text.indexOf(target, pos + 1);
       }
     });
+    matches.sort((a, b) => a.index - b.index);
+
+    const parts: (string | React.ReactNode)[] = [];
+    const usedElIds = new Set<string>();
+    let lastIndex = 0;
+
+    matches.forEach((m, i) => {
+      if (m.index > lastIndex) {
+        parts.push(text.substring(lastIndex, m.index));
+      }
+      parts.push(
+        <button
+          key={`${m.el.id}-${i}`}
+          onClick={(e) => { e.stopPropagation(); handleInteraction(m.el); }}
+          className={`px-1.5 py-0.5 rounded border text-[10px] font-bold inline-flex items-center gap-1 mx-0.5 transition-all ${
+            gameState.inventory.includes(m.el.id) 
+              ? 'bg-white/5 border-white/10 text-white/30' 
+              : 'bg-white/10 border-white/30 text-white hover:bg-white/30 shadow-sm'
+          }`}
+        >
+          {m.el.label}
+          {gameState.inventory.includes(m.el.id) && <Sparkles size={8} />}
+        </button>
+      );
+      usedElIds.add(m.el.id);
+      lastIndex = m.index + m.length;
+    });
     parts.push(text.substring(lastIndex));
+
+    // 容錯機制：如果有些元素沒被嵌入文字，直接顯示在下方
+    const leftoverElements = visibleElements.filter(el => !usedElIds.has(el.id));
 
     return (
       <div className="mb-4">
         <div className="text-[10px] text-white/40 uppercase tracking-widest mb-1 flex items-center gap-1">
           <BookOpen size={10} /> 場景描述
         </div>
-        <p className="text-[11px] leading-relaxed text-stone-300 italic border-l border-white/20 pl-3">
+        <div className="text-[11px] leading-relaxed text-stone-300 italic border-l border-white/20 pl-3 mb-3">
           {parts}
-        </p>
+        </div>
+        {leftoverElements.length > 0 && (
+          <div className="flex flex-wrap gap-2 mt-2 pl-3">
+            {leftoverElements.map(el => (
+              <button
+                key={el.id}
+                onClick={(e) => { e.stopPropagation(); handleInteraction(el); }}
+                className="flex items-center gap-1 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[10px] text-white/60 hover:bg-white/10"
+              >
+                <Search size={10} /> 搜查：{el.label}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
     );
   };
@@ -129,7 +164,7 @@ const App: React.FC = () => {
       <div className="absolute inset-0 opacity-20 pointer-events-none oil-painting-texture" />
       
       {gameState.soulSeeingActive && (
-        <div className={`absolute inset-0 z-10 pointer-events-none soul-scanline opacity-30 ${currentScene.id.startsWith('ch8_2') ? 'glitch-anim' : ''}`} />
+        <div className={`absolute inset-0 z-10 pointer-events-none soul-scanline opacity-30 ${currentScene.id.startsWith('ch8_') ? 'glitch-anim' : ''}`} />
       )}
 
       <div className="relative z-50 w-full px-6 pt-6 flex flex-col gap-2">
@@ -156,7 +191,7 @@ const App: React.FC = () => {
         <div className="flex gap-3 text-[10px] font-bold">
            <span className="flex items-center gap-1 text-red-400"><Heart size={10} /> {gameState.hp}</span>
            {seedCount > 0 && <span className="flex items-center gap-1 text-fuchsia-400"><Sparkles size={10} /> {seedCount}/3</span>}
-           {memoCount > 0 && <span className="flex items-center gap-1 text-red-500"><History size={10} /> {memoCount}/3</span>}
+           {gameState.inventory.includes('jiahao_photo') && <span className="flex items-center gap-1 text-amber-400"><History size={10} /> 取得大頭照</span>}
         </div>
       </div>
 
@@ -166,7 +201,7 @@ const App: React.FC = () => {
           <div 
             onClick={nextDialogue}
             className={`relative p-8 rounded-[2.5rem] bg-white/[0.03] backdrop-blur-md border border-white/10 shadow-2xl min-h-[320px] flex flex-col transition-all cursor-pointer ${
-              gameState.soulSeeingActive ? (currentScene.id.startsWith('ch8_2') ? 'border-red-500/50 bg-red-950/20 soul-active-ui' : 'border-fuchsia-500/50 bg-fuchsia-950/20') : ''
+              gameState.soulSeeingActive ? (currentScene.id.startsWith('ch8_') ? 'border-red-500/50 bg-red-950/20 soul-active-ui' : 'border-fuchsia-500/50 bg-fuchsia-950/20') : ''
             }`}
           >
             {canUseSoulSee && (
@@ -215,7 +250,12 @@ const App: React.FC = () => {
                   onClick={(e) => { e.stopPropagation(); handleChoice(choice); }}
                   className="w-full p-5 rounded-3xl bg-white/5 border border-white/10 text-left flex items-center justify-between hover:bg-white/10 transition-all active:scale-95"
                 >
-                  <span className="text-sm font-bold tracking-wider">{choice.text}</span>
+                  <div className="flex flex-col">
+                    <span className="text-sm font-bold tracking-wider">{choice.text}</span>
+                    {choice.condition && !choice.condition(gameState) && (
+                      <span className="text-[10px] text-red-400 mt-1 opacity-80">{choice.conditionMessage}</span>
+                    )}
+                  </div>
                   <ChevronRight size={16} className="text-white/30" />
                 </button>
               ))}
@@ -225,24 +265,24 @@ const App: React.FC = () => {
       </main>
 
       {gameState.soulSeeingActive && soulSeeElements.length > 0 && !interactionMessage && (
-        <div className={`fixed inset-0 z-[100] flex items-center justify-center p-8 backdrop-blur-sm animate-in fade-in duration-500 ${currentScene.id.startsWith('ch8_2') ? 'bg-red-950/40' : 'bg-fuchsia-950/30'}`}>
+        <div className={`fixed inset-0 z-[100] flex items-center justify-center p-8 backdrop-blur-sm animate-in fade-in duration-500 ${currentScene.id.startsWith('ch8_') ? 'bg-red-950/40' : 'bg-fuchsia-950/30'}`}>
           <div className="flex flex-col gap-6 w-full max-w-xs">
             <div className="text-center mb-4">
-              <Sparkles className={`mx-auto mb-2 animate-pulse ${currentScene.id.startsWith('ch8_2') ? 'text-red-400' : 'text-fuchsia-400'}`} />
+              <Sparkles className={`mx-auto mb-2 animate-pulse ${currentScene.id.startsWith('ch8_') ? 'text-red-400' : 'text-fuchsia-400'}`} />
               <div className="text-xs font-bold tracking-[0.2em] uppercase">
-                {currentScene.id.startsWith('ch8_2') ? '窺視被封印的記憶核心' : '發現遺落的靈魂之火'}
+                {currentScene.id.startsWith('ch8_') ? '窺視被封印的記憶核心' : '發現遺落的靈魂之火'}
               </div>
             </div>
             {soulSeeElements.map(el => (
               <button
                 key={el.id}
                 onClick={(e) => { e.stopPropagation(); handleInteraction(el); }}
-                className={`group relative w-full p-6 rounded-[2rem] shadow-xl flex items-center gap-4 transform active:scale-90 transition-transform ${currentScene.id.startsWith('ch8_2') ? 'bg-red-600 text-white' : 'bg-white text-fuchsia-900'}`}
+                className={`group relative w-full p-6 rounded-[2rem] shadow-xl flex items-center gap-4 transform active:scale-90 transition-transform ${currentScene.id.startsWith('ch8_') ? 'bg-red-600 text-white' : 'bg-white text-fuchsia-900'}`}
               >
                 <Flame size={28} className="animate-bounce" />
                 <div className="flex flex-col text-left">
                   <span className="text-[10px] font-black uppercase tracking-tighter opacity-60">
-                    {currentScene.id.startsWith('ch8_2') ? 'MEMORY FRAGMENT' : 'SOUL SEED'}
+                    {currentScene.id.startsWith('ch8_') ? 'MEMORY FRAGMENT' : 'SOUL SEED'}
                   </span>
                   <span className="text-lg font-black">{el.label}</span>
                 </div>
