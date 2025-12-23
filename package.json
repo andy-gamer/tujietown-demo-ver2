@@ -1,0 +1,11 @@
+
+{
+  "name": "tujie-town-mvp",
+  "private": true,
+  "version": "0.1.0",
+  "dependencies": {
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3",
+    "lucide-react": "^0.454.0"
+  }
+}
