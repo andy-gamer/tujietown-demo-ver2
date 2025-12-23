@@ -23,7 +23,7 @@ export const chapter8_gym: Scene = {
   chapterIndex: 9,
   title: '禮堂：花倀的突襲',
   outlinePhase: '【對抗】現出真身',
-  description: '禮堂講台上，男孩佇立在那。當燕靠近時，男孩的身軀突然扭曲、膨脹，變成了猙獰的花倀怪物。',
+  description: '禮堂講台上，男孩佇立在那。當燕靠近時，男孩的身軀突然變成了猙獰的花倀。他必須立刻逃往「二樓音控室」。',
   imageUrl: '',
   world: WorldState.OTHERWORLD,
   interactiveElements: [
@@ -70,17 +70,17 @@ export const chapter8_classroom: Scene = {
   chapterIndex: 11,
   title: '幻影教室：夕陽下的缺憾',
   outlinePhase: '【轉】記憶潛行',
-  description: '一陣眩暈後，燕發現自己身處夕陽紅色的教室，空無一人。窗外的夕陽如血一般。這是他的國小教室。',
+  description: '燕發現自己身處夕陽紅色的教室。他走向「自己的抽屜」試圖尋找線索，並看著那個「座位上的黑影」，一切空無一人。',
   imageUrl: '',
   world: WorldState.DREAM,
   interactiveElements: [
     { 
       id: 'desk_photo', 
       label: '自己的抽屜', 
-      description: '燕在自己的課桌抽屜裡翻到了一張「遺失的大頭照」。',
+      description: '燕在自己的課桌抽屜裡翻到了一張「遺失的大頭照」。上頭的人顯得模糊不清。',
       effect: (s) => ({ inventory: [...s.inventory, 'jiahao_photo'] })
     },
-    { id: 'black_shadow', label: '座位上的黑影', description: '一個熟悉的黑影坐在家豪生前的座位上，低頭沈默。' }
+    { id: 'black_shadow', label: '座位上的黑影', description: '一個熟悉的黑影坐在家豪生前的座位上，低頭沈默，不發一語。' }
   ],
   dialogues: [
     { speaker: '燕', text: '為什麼這張頭像會在我的抽屜裡...難道當初是我拿走的？' },
@@ -92,7 +92,7 @@ export const chapter8_classroom: Scene = {
       text: '將頭像貼回紀念冊', 
       nextSceneId: 'ch8_abuse_room',
       condition: (s) => s.inventory.includes('jiahao_photo'),
-      conditionMessage: '必須先在抽屜裡找到那張遺失的「大頭照」。'
+      conditionMessage: '必須先在「自己的抽屜」裡找到那張遺失的「大頭照」。'
     }
   ]
 };
@@ -102,7 +102,7 @@ export const chapter8_abuse_room: Scene = {
   chapterIndex: 11,
   title: '黑暗空間：家暴的迴響',
   outlinePhase: '【轉】黑暗的拽拉',
-  description: '貼上頭像的瞬間，場景切換到一間陰暗破亂的民房。門外傳來男子酒醉的吆喝與女子的哭聲。',
+  description: '貼上頭像的瞬間，場景切換到一間陰暗破亂的民房。空間在閃現：父親的咆哮與受傷的男孩。',
   imageUrl: '',
   world: WorldState.DREAM,
   dialogues: [
@@ -120,7 +120,7 @@ export const chapter8_park: Scene = {
   chapterIndex: 12,
   title: '心靈公園：最後的糖果',
   outlinePhase: '【轉】尋找解藥',
-  description: '燕在公園的長椅旁醒來。這是家豪記憶中唯一的溫柔之處。家豪不斷地在長椅、沙坑、盪鞦韆間閃現。',
+  description: '燕在公園醒來。家豪不斷在長椅、沙坑、盪鞦韆間閃現。妳必須與他對話。',
   imageUrl: '',
   world: WorldState.DREAM,
   dialogues: [
@@ -139,7 +139,7 @@ export const chapter8_boss_confront: Scene = {
   chapterIndex: 12,
   title: '禮堂終戰：九姑娘的干預',
   outlinePhase: '【對抗】九姑娘的嘲諷',
-  description: '天空傳來九姑娘尖銳的笑聲。家豪再次痛苦地異化，巨大的藤蔓從禮堂地表竄出，將溫馨的公園撕裂。',
+  description: '天空傳來九姑娘尖銳的笑聲。巨大的藤蔓從禮堂地表竄出，將溫馨的公園撕裂。',
   imageUrl: '',
   world: WorldState.OTHERWORLD,
   dialogues: [
