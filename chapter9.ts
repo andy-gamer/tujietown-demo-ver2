@@ -1,8 +1,9 @@
+
 import { Scene, WorldState } from './types';
 
 export const chapter9: Scene = {
   id: 'ch9_exit',
-  chapterIndex: 13,
+  chapterIndex: 14,
   title: '校門之外：命運的分叉',
   outlinePhase: '【合】擊敗九姑娘',
   description: '燕踉蹌地走出學校。校門口，九姑娘正以一種看戲的神情注視著他。小男孩（真貨）遞上了藥方上的關鍵藥材。',

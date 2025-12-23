@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { SCENES, INITIAL_STATE, CHAPTER_NAMES } from './constants';
 import { GameState, WorldState, InteractiveElement } from './types';
-import { ShieldAlert, Heart, ChevronRight, MapPin, History, Sparkles, X, BrainCircuit, Flame, BookOpen, Search } from 'lucide-react';
+import { ShieldAlert, Heart, ChevronRight, MapPin, History, Sparkles, X, BrainCircuit, Flame, BookOpen, Search, ListRestart, Layers } from 'lucide-react';
 
 const App: React.FC = () => {
   const [gameState, setGameState] = useState<GameState>(INITIAL_STATE);
@@ -10,6 +10,7 @@ const App: React.FC = () => {
   const [dialogueIdx, setDialogueIdx] = useState(0);
   const [interactionMessage, setInteractionMessage] = useState<string | null>(null);
   const [errorToast, setErrorToast] = useState<string | null>(null);
+  const [isTimelineOpen, setIsTimelineOpen] = useState(false);
 
   const currentScene = SCENES[gameState.currentSceneId] || SCENES['ch0_train'];
 
@@ -19,6 +20,26 @@ const App: React.FC = () => {
   const toggleSoulSee = () => {
     if (!canUseSoulSee) return;
     setGameState(prev => ({ ...prev, soulSeeingActive: !prev.soulSeeingActive }));
+  };
+
+  const jumpToNode = (sceneId: string) => {
+    setIsTransitioning(true);
+    setIsTimelineOpen(false);
+    setInteractionMessage(null);
+    
+    setTimeout(() => {
+      setGameState(prev => ({
+        ...prev,
+        currentSceneId: sceneId,
+        world: SCENES[sceneId]?.world || prev.world,
+        soulSeeingActive: false
+      }));
+      setDialogueIdx(0);
+    }, 450);
+
+    setTimeout(() => {
+      setIsTransitioning(false);
+    }, 900);
   };
 
   const handleChoice = (choice: any) => {
@@ -81,7 +102,6 @@ const App: React.FC = () => {
     const visibleElements = elements.filter(el => !el.requiresSoulSee);
     let text = currentScene.description;
     
-    // 收集所有匹配項並排序
     const matches: { index: number; length: number; el: InteractiveElement }[] = [];
     visibleElements.forEach(el => {
       const target = `「${el.label}」`;
@@ -120,7 +140,6 @@ const App: React.FC = () => {
     });
     parts.push(text.substring(lastIndex));
 
-    // 容錯機制：如果有些元素沒被嵌入文字，直接顯示在下方
     const leftoverElements = visibleElements.filter(el => !usedElIds.has(el.id));
 
     return (
@@ -151,11 +170,15 @@ const App: React.FC = () => {
   const currentSpeaker = currentScene.dialogues[dialogueIdx]?.speaker || '敘事';
   const isSystem = currentSpeaker.includes('系統');
   const seedCount = gameState.inventory.filter(i => i.startsWith('seed_')).length;
-  const memoCount = gameState.inventory.filter(i => i.startsWith('memo_')).length;
 
   const soulSeeElements = (currentScene.interactiveElements || []).filter(
     el => el.requiresSoulSee && !gameState.inventory.includes(el.id)
   );
+
+  const getChapterSceneId = (idx: number) => {
+    const entry = Object.entries(SCENES).find(([id, scene]) => scene.chapterIndex === idx);
+    return entry ? entry[0] : null;
+  };
 
   return (
     <div className={`relative w-full h-screen overflow-hidden flex flex-col transition-all duration-1000 bg-gradient-to-b ${getBackgroundColor()} text-white font-serif select-none`}>
@@ -167,26 +190,50 @@ const App: React.FC = () => {
         <div className={`absolute inset-0 z-10 pointer-events-none soul-scanline opacity-30 ${currentScene.id.startsWith('ch8_') ? 'glitch-anim' : ''}`} />
       )}
 
+      {/* Progress & Timeline Header */}
       <div className="relative z-50 w-full px-6 pt-6 flex flex-col gap-2">
-        <div className="flex justify-between items-end">
+        <div className="flex justify-between items-center mb-1">
+          <button 
+            onClick={() => setIsTimelineOpen(true)}
+            className="flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 border border-white/10 text-[10px] font-bold tracking-widest uppercase hover:bg-white/20 transition-all active:scale-95"
+          >
+            <Layers size={12} /> 劇情錄程
+          </button>
           <span className="text-[10px] font-black tracking-[0.3em] text-white/40 uppercase">
-            {currentScene.outlinePhase}
+             {currentScene.outlinePhase}
           </span>
-          <div className="flex gap-1.5 items-center">
-            {CHAPTER_NAMES.map((_, idx) => (
-              <div key={idx} className={`h-1 rounded-full transition-all duration-500 ${
-                idx === currentScene.chapterIndex ? 'bg-white w-4' : idx < currentScene.chapterIndex ? 'bg-white/40 w-1' : 'bg-white/10 w-1'
-              }`} />
-            ))}
-          </div>
         </div>
-        <div className="h-[1px] w-full bg-white/10" />
+        
+        {/* Interactive Progress Bar */}
+        <div className="flex gap-1 items-center overflow-x-auto no-scrollbar py-1">
+          {CHAPTER_NAMES.map((name, idx) => {
+            const isActive = idx === currentScene.chapterIndex;
+            const isCompleted = idx < currentScene.chapterIndex;
+            const targetId = getChapterSceneId(idx);
+
+            return (
+              <button
+                key={idx}
+                disabled={!targetId}
+                onClick={() => targetId && jumpToNode(targetId)}
+                className={`h-1 flex-1 min-w-[12px] rounded-full transition-all duration-500 relative group ${
+                  isActive ? 'bg-white shadow-[0_0_8px_rgba(255,255,255,0.8)]' : 
+                  isCompleted ? 'bg-fuchsia-400' : 'bg-white/10'
+                }`}
+              >
+                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-black/80 border border-white/20 rounded text-[8px] whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-[100] shadow-xl">
+                  {idx}. {name}
+                </div>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
-      <div className="relative z-40 w-full px-6 py-4 flex justify-between items-center">
+      <div className="relative z-40 w-full px-6 py-2 flex justify-between items-center">
         <div className="flex items-center gap-2">
           <MapPin size={12} className="text-white/60" />
-          <span className="text-sm font-bold tracking-widest">{currentScene.title}</span>
+          <span className="text-[11px] font-bold tracking-[0.2em]">{currentScene.title}</span>
         </div>
         <div className="flex gap-3 text-[10px] font-bold">
            <span className="flex items-center gap-1 text-red-400"><Heart size={10} /> {gameState.hp}</span>
@@ -212,7 +259,7 @@ const App: React.FC = () => {
                     gameState.soulSeeingActive ? 'bg-fuchsia-600 border-white text-white shadow-lg' : 'bg-black/40 border-white/20 text-white/60'
                   }`}
                 >
-                  <BrainCircuit size={12} /> {gameState.soulSeeingActive ? '看取：釋放強光' : '凝聚心神'}
+                  <BrainCircuit size={12} /> {gameState.soulSeeingActive ? '看取中' : '凝聚心神'}
                 </button>
               </div>
             )}
@@ -264,34 +311,71 @@ const App: React.FC = () => {
         </div>
       </main>
 
-      {gameState.soulSeeingActive && soulSeeElements.length > 0 && !interactionMessage && (
-        <div className={`fixed inset-0 z-[100] flex items-center justify-center p-8 backdrop-blur-sm animate-in fade-in duration-500 ${currentScene.id.startsWith('ch8_') ? 'bg-red-950/40' : 'bg-fuchsia-950/30'}`}>
-          <div className="flex flex-col gap-6 w-full max-w-xs">
-            <div className="text-center mb-4">
-              <Sparkles className={`mx-auto mb-2 animate-pulse ${currentScene.id.startsWith('ch8_') ? 'text-red-400' : 'text-fuchsia-400'}`} />
-              <div className="text-xs font-bold tracking-[0.2em] uppercase">
-                {currentScene.id.startsWith('ch8_') ? '窺視被封印的記憶核心' : '發現遺落的靈魂之火'}
-              </div>
+      {/* Chapter Select Timeline Overlay */}
+      {isTimelineOpen && (
+        <div className="fixed inset-0 z-[200] flex flex-col bg-black/95 animate-in fade-in duration-300 overflow-y-auto no-scrollbar">
+          <div className="sticky top-0 p-6 flex justify-between items-center bg-black/50 backdrop-blur-md border-b border-white/10">
+            <h2 className="text-xl font-black tracking-[0.2em] flex items-center gap-3">
+              <Layers className="text-fuchsia-500" /> 劇情錄程錄
+            </h2>
+            <button 
+              onClick={() => setIsTimelineOpen(false)}
+              className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition-all"
+            >
+              <X size={24} />
+            </button>
+          </div>
+          
+          <div className="p-6 pb-20 max-w-lg mx-auto w-full space-y-6">
+            <p className="text-xs text-stone-400 italic mb-8">「看取時空的碎片，妳可以自由跳躍至已知的命運節點。」</p>
+            
+            <div className="space-y-4">
+              {CHAPTER_NAMES.map((name, idx) => {
+                const targetId = getChapterSceneId(idx);
+                const isCurrent = idx === currentScene.chapterIndex;
+                const isPast = idx < currentScene.chapterIndex;
+
+                return (
+                  <button
+                    key={idx}
+                    disabled={!targetId}
+                    onClick={() => targetId && jumpToNode(targetId)}
+                    className={`w-full p-4 rounded-2xl border text-left transition-all flex items-center gap-4 group ${
+                      isCurrent 
+                        ? 'bg-fuchsia-900/40 border-fuchsia-500 shadow-[0_0_15px_rgba(217,70,239,0.2)]' 
+                        : isPast 
+                          ? 'bg-white/5 border-white/10 hover:bg-white/10'
+                          : 'bg-black/50 border-white/5 opacity-40'
+                    }`}
+                  >
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold ${
+                      isCurrent ? 'bg-fuchsia-500 text-white' : 'bg-white/10 text-white/40 group-hover:bg-white/20 transition-all'
+                    }`}>
+                      {idx}
+                    </div>
+                    <div className="flex-1">
+                      <div className={`text-sm font-bold ${isCurrent ? 'text-white' : 'text-stone-300'}`}>{name}</div>
+                      {isCurrent && <div className="text-[10px] text-fuchsia-400 font-bold uppercase mt-1">目前所在位置</div>}
+                    </div>
+                    {targetId && <Search size={14} className="opacity-20 group-hover:opacity-60" />}
+                  </button>
+                );
+              })}
             </div>
-            {soulSeeElements.map(el => (
-              <button
-                key={el.id}
-                onClick={(e) => { e.stopPropagation(); handleInteraction(el); }}
-                className={`group relative w-full p-6 rounded-[2rem] shadow-xl flex items-center gap-4 transform active:scale-90 transition-transform ${currentScene.id.startsWith('ch8_') ? 'bg-red-600 text-white' : 'bg-white text-fuchsia-900'}`}
+            
+            <div className="pt-10 flex flex-col items-center">
+              <button 
+                onClick={() => jumpToNode('ch0_train')}
+                className="flex items-center gap-2 px-6 py-3 rounded-full bg-red-950/40 border border-red-500/50 text-[10px] font-black tracking-widest text-red-400 hover:bg-red-900/60 transition-all"
               >
-                <Flame size={28} className="animate-bounce" />
-                <div className="flex flex-col text-left">
-                  <span className="text-[10px] font-black uppercase tracking-tighter opacity-60">
-                    {currentScene.id.startsWith('ch8_') ? 'MEMORY FRAGMENT' : 'SOUL SEED'}
-                  </span>
-                  <span className="text-lg font-black">{el.label}</span>
-                </div>
+                <ListRestart size={14} /> 重啟噩夢輪迴
               </button>
-            ))}
+            </div>
           </div>
         </div>
       )}
 
+      {/* Interaction Feedback Overlay */}
       {interactionMessage && (
         <div className="fixed inset-0 z-[120] flex items-center justify-center p-8">
           <div className="absolute inset-0 bg-black/95" />
@@ -308,6 +392,33 @@ const App: React.FC = () => {
             >
               承受這份痛楚
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Soul-See Interactive Elements Overlay */}
+      {gameState.soulSeeingActive && soulSeeElements.length > 0 && !interactionMessage && (
+        <div className={`fixed inset-0 z-[100] flex items-center justify-center p-8 backdrop-blur-sm animate-in fade-in duration-500 ${currentScene.id.startsWith('ch8_') ? 'bg-red-950/40' : 'bg-fuchsia-950/30'}`}>
+          <div className="flex flex-col gap-6 w-full max-w-xs">
+            <div className="text-center mb-4">
+              <Sparkles className={`mx-auto mb-2 animate-pulse ${currentScene.id.startsWith('ch8_') ? 'text-red-400' : 'text-fuchsia-400'}`} />
+              <div className="text-xs font-bold tracking-[0.2em] uppercase">
+                {currentScene.id.startsWith('ch8_') ? '窺視記憶核心' : '發現靈魂之火'}
+              </div>
+            </div>
+            {soulSeeElements.map(el => (
+              <button
+                key={el.id}
+                onClick={(e) => { e.stopPropagation(); handleInteraction(el); }}
+                className={`group relative w-full p-6 rounded-[2rem] shadow-xl flex items-center gap-4 transform active:scale-90 transition-transform ${currentScene.id.startsWith('ch8_') ? 'bg-red-600 text-white' : 'bg-white text-fuchsia-900'}`}
+              >
+                <Flame size={28} className="animate-bounce" />
+                <div className="flex flex-col text-left">
+                  <span className="text-[10px] font-black uppercase tracking-tighter opacity-60">SOUL FRAGMENT</span>
+                  <span className="text-lg font-black">{el.label}</span>
+                </div>
+              </button>
+            ))}
           </div>
         </div>
       )}

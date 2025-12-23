@@ -137,7 +137,7 @@ export const chapter8_park: Scene = {
 
 export const chapter8_boss_confront: Scene = {
   id: 'ch8_boss_confront',
-  chapterIndex: 12,
+  chapterIndex: 13,
   title: '禮堂終戰：九姑娘的干預',
   outlinePhase: '【對抗】九姑娘的嘲諷',
   description: '天空傳來九姑娘尖銳的笑聲。巨大的藤蔓從禮堂地表竄出，將溫馨的公園撕裂。',
@@ -154,7 +154,7 @@ export const chapter8_boss_confront: Scene = {
 
 export const chapter8_final_decision: Scene = {
   id: 'ch8_final_decision',
-  chapterIndex: 12,
+  chapterIndex: 13,
   title: '靈魂的歸宿',
   outlinePhase: '【合】救贖或沈眠',
   description: '戰鬥結束，家豪虛弱地癱在光影之中。九姑娘的氣息暫時退去。',
